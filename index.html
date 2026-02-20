@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Салют + Текст</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="container">
+    <h1 id="clickText">Нажми 👇</h1>
+    <img id="image" class="image" src="cat1.jpg">
+    <div id="message" class="message"></div>
+</div>
+
+<div id="fireworks-container"></div>
+
+<script>
+const screens = [
+    { text: "С днем рождения, подругааа!!!", img: "https://i.yapx.cc/c9yow.jpg" },
+    { text: "Поздравляем от Полины и Тихопрыга", img: "https://i.yapx.cc/c9yoz.jpg" },
+    { text: "Желаем тебе счастья и успеха по жизни", img: "https://i.yapx.cc/c9yor.jpg" },
+    { text: "У тебя обязательно получится достичь всех твоих целей!!", img: "https://i.yapx.cc/c9you.jpg" },
+    { text: "Мы уверены, тебя ждет большое будущее (и много деняк)", img: "https://i.yapx.cc/c9yov.png" },
+    { text: "Ты самая лучшая 💖", img: "https://i.yapx.cc/c9yoy.jpg" }
+];
+
+let current = 0;
+let isAnimating = false;
+
+const image = document.getElementById("image");
+const message = document.getElementById("message");
+const clickText = document.getElementById("clickText");
+const fireworksContainer = document.getElementById("fireworks-container");
+
+image.addEventListener("click", () => {
+    if (isAnimating) return;
+    isAnimating = true;
+
+    clickText.style.display = "none";
+    image.style.display = "none";
+
+    message.innerText = screens[current].text;
+    message.classList.remove("animate");
+    void message.offsetWidth;
+    message.classList.add("animate");
+
+    launchFireworks();
+});
+
+message.addEventListener("animationend", () => {
+    current = (current + 1) % screens.length;
+    image.src = screens[current].img;
+
+    message.classList.remove("animate");
+
+    clickText.style.display = "block";
+    image.style.display = "block";
+
+    isAnimating = false;
+});
+
+function launchFireworks() {
+    const positions = [window.innerWidth*0.4, window.innerWidth*0.6];
+    const fireworkHeight = window.innerHeight * 0.4; // точка взрыва
+    const riseDuration = 600; // время подъема в мс
+
+    positions.forEach(x => {
+        const firework = document.createElement("div");
+        firework.className = "firework";
+        firework.style.left = x + "px";
+        firework.style.bottom = "0px"; // стартовая позиция снизу
+        fireworksContainer.appendChild(firework);
+
+        // Даем браузеру отрендерить шарик на старте
+        requestAnimationFrame(() => {
+            firework.style.transition = `bottom ${riseDuration}ms ease-out`;
+            firework.style.bottom = fireworkHeight + "px";
+
+            // Взрыв через riseDuration
+            setTimeout(() => {
+                const rect = firework.getBoundingClientRect();
+                explode(rect.left + rect.width/2, rect.top + rect.height/2);
+                firework.remove();
+            }, riseDuration);
+        });
+    });
+}
+
+function explode(centerX, centerY) {
+    const colors = ["#ff0040","#ff8000","#ffff00","#00ffcc","#ff00ff","#ffffff"];
+    for (let i = 0; i < 30; i++) {
+        const particle = document.createElement("div");
+        particle.className = "particle";
+        particle.style.backgroundColor = colors[Math.floor(Math.random()*colors.length)];
+        particle.style.left = centerX + "px";
+        particle.style.top = centerY + "px";
+
+        const angle = Math.random() * 2 * Math.PI;
+        const distance = 50 + Math.random() * 100;
+        particle.style.setProperty('--dx', Math.cos(angle) * distance + "px");
+        particle.style.setProperty('--dy', Math.sin(angle) * distance + "px");
+
+        fireworksContainer.appendChild(particle);
+        setTimeout(() => particle.remove(), 1500);
+    }
+}
+</script>
+
+</body>
+</html>
